@@ -110,6 +110,7 @@ func traceLineFiles() []file {
 			}
 		}
 	}
+	files = append(files, wslFiles("claude", "codex", "pi", "omp")...)
 	return append(files, geminiTraceFiles()...)
 }
 

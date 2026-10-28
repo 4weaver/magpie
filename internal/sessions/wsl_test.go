@@ -388,3 +388,26 @@ func TestWSLNoneWithoutHomes(t *testing.T) {
 		t.Fatal(r)
 	}
 }
+
+// Trace discovery includes the same WSL agents usage/calls already list.
+func TestTraceLineFilesIncludesWSL(t *testing.T) {
+	home, _ := wslDistro(t)
+	_ = wslFiles("claude", "codex", "pi", "omp")
+	wslSettle()
+	got := traceLineFiles()
+	seen := map[string]bool{}
+	for _, f := range got {
+		if f.m().wsl != "Ubuntu" {
+			continue
+		}
+		if !strings.HasPrefix(f.path, home) {
+			t.Fatalf("WSL path outside distro home: %+v", f)
+		}
+		seen[f.agent] = seen[f.agent] || f.main
+	}
+	for _, a := range []string{"claude", "codex", "pi", "omp"} {
+		if !seen[a] {
+			t.Fatalf("no WSL %s main session in traceLineFiles (%d files)", a, len(got))
+		}
+	}
+}
